@@ -5,6 +5,8 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 
 import javax.servlet.RequestDispatcher;
@@ -13,6 +15,15 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriBuilder;
+
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
+import org.glassfish.jersey.client.ClientConfig;
 
 
 //@WebServlet("/DetailServlet")
@@ -77,21 +88,38 @@ public class DetailServlet extends HttpServlet {
 	    		
 	    		try {   		
 	    			
-	    			java.sql.Connection connection = DatabaseConnection.connect();
-	                Statement st = connection.createStatement();    	 
-	                ResultSet rs = st.executeQuery("SELECT * FROM products where id= " + id);
+//	    			java.sql.Connection connection = DatabaseConnection.connect();
+//	                Statement st = connection.createStatement();    	 
+//	                ResultSet rs = st.executeQuery("SELECT * FROM products where id= " + id);
+	                
+	                ClientConfig config = new ClientConfig();
+	            	Product product = new Product();
+	            	Client client = ClientBuilder.newClient(config);
+	            	WebTarget target = client.target(UriBuilder.fromUri("http://localhost:6060/PA3").build());
+	            	try {
+	            	String jsonResponse = target.path("rest").path("products").path(id).request(). //send a request
+	                        accept(MediaType.APPLICATION_JSON). //specify the media type of the response
+	                        get(String.class);
+	            	System.out.println(jsonResponse);
+	            	ObjectMapper objectMapper = new ObjectMapper();
+	            	product = objectMapper.readValue(jsonResponse, new TypeReference<Product>() {});
+	            	}
+	            	catch(Exception e) {
+	            		e.printStackTrace();
+	            	}
 
 	    	      
-	    	      if (rs.next())
+	    	      if (product != null)
 	    	      {
-	    	    	 id = rs.getString("id");
+	    	    	  
+	    	    	 id = Integer.toString(product.getId());
 	    	    	 
-	    	         name = rs.getString("name"); 
-	    	         summary = rs.getString("summary");
-	    	         thumbnail = rs.getString("thumbnail");
-	    	         category = rs.getString("category");
-	    	         detail = rs.getString("detail");
-	    	         price = rs.getString("price");
+	    	         name = product.getName();
+	    	         summary = product.getSummary();
+	    	         thumbnail = product.getThumbnail();
+	    	         category = product.getCategory();
+	    	         detail = product.getDetail();
+	    	         price = Double.toString(product.getPrice());
 	    	         thumbnail = "assets/" + thumbnail; 
 	    	         
 	    	         
