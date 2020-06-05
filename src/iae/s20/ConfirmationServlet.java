@@ -2,6 +2,8 @@ package iae.s20;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,13 +12,28 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.Future;
 
+import javax.json.JsonObject;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Form;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
+
+import org.glassfish.jersey.client.ClientConfig;
+import org.json.JSONObject;
 
 /**
  * Servlet implementation class ConfirmationServlet
@@ -206,38 +223,97 @@ public void doGet(HttpServletRequest request, HttpServletResponse response) thro
 		}
 		Float subtotal = (Float)session.getAttribute("subtotal");
 		try(java.sql.Connection connection = DatabaseConnection.connect()){
-			PreparedStatement orderInsert;
-			PreparedStatement productInsert;
-			String orderInsertStr = "insert into orders values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
-			String productInsertStr = "insert into orderProducts values(?,?,?);";
-			connection.setAutoCommit(false);
-			int newID = (int)(Math.random()* 10000);
+			JSONObject formData = new JSONObject();
+			ClientConfig config = new ClientConfig();
+        	Client client = ClientBuilder.newClient(config);
+        	WebTarget target = client.target(UriBuilder.fromUri("http://localhost:6060/PA3/rest/orders").build());
+        	//Form formData = new Form();
+//        	MultivaluedMap<String,String> formData = new MultivaluedHashMap<String,String>();
+			Order newOrder = new Order();
+			newOrder.setAddress(params.get("address"));
+			formData.put("address", params.get("address"));
+			newOrder.setCardname(params.get("cardname"));
+//			formData.param("cardname", params.get("cardname"));
+//			newOrder.setEmail(params.get("email"));
+			int newID = Math.abs((int)(Math.random()* 10000));
 			session.setAttribute("newID", newID);
-			orderInsert = connection.prepareStatement(orderInsertStr);
-			productInsert = connection.prepareStatement(productInsertStr);
-			orderInsert.setInt(1, newID);
-			orderInsert.setString(2, params.get("email"));
-			orderInsert.setString(3, params.get("phoneNumber"));
-			orderInsert.setString(4, params.get("address"));
-			orderInsert.setString(5, params.get("city"));
-			orderInsert.setString(6, params.get("state"));
-			orderInsert.setInt(7, Integer.parseInt(params.get("zip")));
-			orderInsert.setString(8, params.get("shippingMethod"));
-			orderInsert.setString(9, params.get("cardname"));
-			orderInsert.setString(10, params.get("cardnumber"));
-			orderInsert.setInt(11, Integer.parseInt(params.get("expmonth")));
-			orderInsert.setInt(12, Integer.parseInt(params.get("expyear")));
-			orderInsert.setInt(13, Integer.parseInt(params.get("cvv")));
-			orderInsert.setString(14, params.get("fullname"));
-			orderInsert.setFloat(15, subtotal);
-			orderInsert.execute();
-			for(Map.Entry<Integer, Integer> mapElement : idList.entrySet()) {
-				productInsert.setInt(1, newID);
-				productInsert.setInt(2, mapElement.getKey());
-				productInsert.setInt(3, mapElement.getValue());
-				productInsert.execute();
+			newOrder.setId(newID);
+			formData.put("id", newID);
+			formData.put("email", params.get("email"));
+			newOrder.setPhone(params.get("phoneNumber"));
+			formData.put("phoneNumber", params.get("phoneNumber"));
+			newOrder.setCity(params.get("city"));
+			formData.put("city", params.get("city"));
+			
+			newOrder.setState(params.get("state"));
+			formData.put("state", params.get("state"));
+			newOrder.setZip(Integer.parseInt(params.get("zip")));
+			formData.put("zip", params.get("zip"));
+			newOrder.setMethod(params.get("shippingMethod"));
+			formData.put("shippingMethod", params.get("shippingMethod"));
+			newOrder.setCardname(params.get("cardname"));
+			formData.put("cardname", params.get("cardname"));
+			newOrder.setCardnumber(params.get("cardnumber"));
+			formData.put("cardnumber", params.get("cardnumber"));
+			newOrder.setExpmonth(Integer.parseInt(params.get("expmonth")));
+			formData.put("expmonth", Integer.parseInt(params.get("expmonth")));
+			newOrder.setExpyear(Integer.parseInt(params.get("expyear")));
+			formData.put("expyear", Integer.parseInt(params.get("expyear")));
+			newOrder.setCvv(Integer.parseInt(params.get("cvv")));
+			formData.put("cvv", Integer.parseInt(params.get("cvv")));
+			newOrder.setName(params.get("fullname"));
+			formData.put("fullname", params.get("fullname"));
+			Double newPrice = Double.parseDouble(Float.toString(subtotal));
+			System.out.println(newPrice);
+			newOrder.setTotalPrice(newPrice);
+			formData.put("subtotal", subtotal);
+			System.out.println(formData);
+			Response res = client.target("http://localhost:6060/PA3/rest/orders").request(MediaType.APPLICATION_JSON).post(Entity.json(newOrder));
+			String result = res.readEntity(String.class);
+			System.out.println(result);
+			for(Map.Entry<Integer, Integer> mapElement: idList.entrySet()) {
+				ProductOrder po = new ProductOrder(newID, mapElement.getKey(), mapElement.getValue());
+				Response resPO = client.target("http://localhost:6060/PA3/rest/orders/product").request(MediaType.APPLICATION_JSON).post(Entity.json(po));
+				System.out.println(resPO);
 			}
-			connection.commit();
+			//Future<String> res = target.request(MediaType.APPLICATION_FORM_URLENCODED).accept(MediaType.TEXT_PLAIN).buildPost(Entity.form(formData)).submit(String.class);
+			//System.out.println("res: " + res);
+//			Response res = target.request().post(Entity.form(formData));
+//			System.out.println("res: " + res);
+			
+        	
+//			PreparedStatement orderInsert;
+//			PreparedStatement productInsert;
+//			String orderInsertStr = "insert into orders values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
+//			String productInsertStr = "insert into orderProducts values(?,?,?);";
+//			connection.setAutoCommit(false);
+//			int newID = (int)(Math.random()* 10000);
+//			session.setAttribute("newID", newID);
+//			orderInsert = connection.prepareStatement(orderInsertStr);
+//			productInsert = connection.prepareStatement(productInsertStr);
+//			orderInsert.setInt(1, newID);
+//			orderInsert.setString(2, params.get("email"));
+//			orderInsert.setString(3, params.get("phoneNumber"));
+//			orderInsert.setString(4, params.get("address"));
+//			orderInsert.setString(5, params.get("city"));
+//			orderInsert.setString(6, params.get("state"));
+//			orderInsert.setInt(7, Integer.parseInt(params.get("zip")));
+//			orderInsert.setString(8, params.get("shippingMethod"));
+//			orderInsert.setString(9, params.get("cardname"));
+//			orderInsert.setString(10, params.get("cardnumber"));
+//			orderInsert.setInt(11, Integer.parseInt(params.get("expmonth")));
+//			orderInsert.setInt(12, Integer.parseInt(params.get("expyear")));
+//			orderInsert.setInt(13, Integer.parseInt(params.get("cvv")));
+//			orderInsert.setString(14, params.get("fullname"));
+//			orderInsert.setFloat(15, subtotal);
+//			orderInsert.execute();
+//			for(Map.Entry<Integer, Integer> mapElement : idList.entrySet()) {
+//				productInsert.setInt(1, newID);
+//				productInsert.setInt(2, mapElement.getKey());
+//				productInsert.setInt(3, mapElement.getValue());
+//				productInsert.execute();
+//			}
+//			connection.commit();
 		}
 		catch(Exception e) {
 			e.printStackTrace();

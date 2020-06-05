@@ -13,36 +13,37 @@ import java.util.List;
 public class OrderService {
 
 	private static final String INSERTION = "insert into orders values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
+	private static final String INSERTION_PRODUCT = "insert into orderproducts values(?, ?, ?);";
 	
-	public static boolean addOrder(Order order) {
-		int idInt = order.getId();
-		String id = Integer.toString(idInt);
+	public static boolean AddOrder(Order order) {
+		int id = order.getId();
+		int idInt = id;
 		String email = order.getEmail();
 		String phone = order.getPhone();
 		String address = order.getAddress();
 		String city = order.getCity();
 		String state = order.getState();
-		int zipInt = order.getZip();
-		String zip = Integer.toString(zipInt);
+		int zip = order.getZip();
+		int zipInt = zip;
 		String method = order.getMethod();
 		String cardname = order.getCardname();
 		String cardnumber = order.getCardnumber();
-		int expmonthInt = order.getExpmonth();
-		String expmonth = Integer.toString(expmonthInt);
-		int expyearInt = order.getExpyear();
-		String expyear = Integer.toString(expyearInt);
-		int cvvInt = order.getCvv();
-		String cvv = Integer.toString(cvvInt);
+		int expmonth = order.getExpmonth();
+		int expmonthInt = expmonth;
+		int expyear = order.getExpyear();
+		int expyearInt = expyear;
+		int cvv = order.getCvv();
+		int cvvInt = cvv;
 		String name = order.getName();
 		Double priceDouble = order.getTotalPrice();
 		String price = Double.toString(priceDouble);
-		String[] params = {id, email, phone, address, city, state, zip, method, cardname, cardnumber, expmonth, expyear, cvv, cvv, name, price};
+		Object[] params = {idInt, email, phone, address, city, state, zipInt, method, cardname, cardnumber, expmonthInt, expyearInt, cvvInt, name, priceDouble};
 		
 		try(Connection connection = DatabaseConnection.connect()){
 			PreparedStatement ps = connection.prepareStatement(INSERTION);
 			int i = 1;
-			for(String param : params) {
-				ps.setString(i++, param);
+			for(Object param : params) {
+				ps.setObject(i++, param);
 			}
 			return ps.executeUpdate() > 0;
 		}
@@ -51,5 +52,22 @@ public class OrderService {
 			return false;
 		}
 		
+	}
+	
+	public static boolean AddOrderProduct(int orderId, int productId, int quantity) {
+		Integer[] params = {orderId, productId, quantity};
+		try(Connection connection = DatabaseConnection.connect()){
+			PreparedStatement ps = connection.prepareStatement(INSERTION_PRODUCT);
+			int i = 1;
+			for(Integer param: params) {
+				ps.setInt(i++, param);
+			}
+			
+			return ps.executeUpdate() > 0;
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 }
