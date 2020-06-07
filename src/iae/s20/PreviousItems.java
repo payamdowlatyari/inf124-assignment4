@@ -5,6 +5,8 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Stack;
 
 import javax.servlet.ServletException;
@@ -13,6 +15,15 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriBuilder;
+
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
+import org.glassfish.jersey.client.ClientConfig;
 
 /**
  * Servlet implementation class PreviousItems
@@ -43,6 +54,7 @@ public class PreviousItems extends HttpServlet {
         	session.setAttribute("prevItemsViewed", newPrevItemsViewed);
         	prevItemsViewed = newPrevItemsViewed;
         }
+        Stack<Integer> noDups = removeDuplicates(prevItemsViewed);
            
            response.setContentType("text/html");
            response.setCharacterEncoding(String.valueOf(StandardCharsets.UTF_8));
@@ -52,18 +64,41 @@ public class PreviousItems extends HttpServlet {
         out.println("<tbody><tr>");
         int prevItemsRendered = 0;
         try(java.sql.Connection connection = DatabaseConnection.connect()) {
-        for(Integer id : prevItemsViewed) {
+        for(Integer id : noDups) {
      	   if(prevItemsRendered < 5) {
-         	   Statement st = connection.createStatement();
-         	   ResultSet rs = st.executeQuery("select * from products where id=" + Integer.toString(id) + ";");
-         	   while(rs.next()) {
+     		   	ClientConfig config = new ClientConfig();
+	          	Product product = new Product();
+	          	Client client = ClientBuilder.newClient(config);
+	          	WebTarget target = client.target(UriBuilder.fromUri("http://localhost:6060/PA3").build());
+	          	try {
+	          	String jsonResponse = target.path("rest").path("products").path(Integer.toString(id)).request(). //send a request
+	                      accept(MediaType.APPLICATION_JSON). //specify the media type of the response
+	                      get(String.class);
+	          	System.out.println(jsonResponse);
+	          	ObjectMapper objectMapper = new ObjectMapper();
+	          	product = objectMapper.readValue(jsonResponse, new TypeReference<Product>() {});
+	          	}
+	          	catch(Exception e) {
+	          		e.printStackTrace();
+	          	}
+
+         	   if(product != null) {
+         		   	String idStr = Integer.toString(product.getId());
+	    	    	 
+	    	         String name = product.getName();
+	    	         String summary = product.getSummary();
+	    	         String thumbnail = product.getThumbnail();
+	    	         String category = product.getCategory();
+	    	         String detail = product.getDetail();
+	    	         String price = Double.toString(product.getPrice());
+	    	         thumbnail = "assets/" + thumbnail; 
+         		   
          		   out.println("<td class='product'>");
-         		   String idStr = rs.getString("id");   	 
-	       	         String name = rs.getString("name");    	
-	       	         String price = rs.getString("price");    	         
-	       	         String thumbnail = rs.getString("thumbnail");
-	       	         String category = rs.getString("category");
-	       	         thumbnail = "assets/" + thumbnail;
+//         		   String idStr = rs.getString("id");   	 
+//	       	         String name = rs.getString("name");    	
+//	       	         String price = rs.getString("price");    	         
+//	       	         String thumbnail = rs.getString("thumbnail");
+//	       	         String category = rs.getString("category");
 	       	         
 	       	         out.println("<img src='" + thumbnail + "'/>");
 	       	         out.println("<h4>" + category + "</h4>");
@@ -91,6 +126,20 @@ public class PreviousItems extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		doGet(request, response);
+	}
+	
+	private Stack<Integer> removeDuplicates(Stack<Integer> original){
+		Set<Integer> usedDigits = new HashSet<Integer>();
+		Stack<Integer> noDups = new Stack<Integer>();
+		
+		for(Integer i : original) {
+			if(!usedDigits.contains(i)) {
+				noDups.push(i);
+			}
+			usedDigits.add(i);
+		}
+		
+		return noDups;
 	}
 
 }

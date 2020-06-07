@@ -65,7 +65,7 @@ public class DetailServlet extends HttpServlet {
 	            out.println("</a></div></div>");
 	            out.println("<div class=\"navbar\"> ");
 	            out.println("<ul class=\"content\"> ");
-	            out.println("<li><a href=\"HomeServlet\">Home</a></li> ");
+	            out.println("<li><a href=\"index.jsp\">Home</a></li> ");
 	            out.println("<li><a href=\"ProductServlet\"class=\"active\">Products</a></li> ");
 	            out.println("<li><a href=\"AboutServlet\">About Us</a></li> ");
 	            out.println("<li><a href=\"ContactServlet\">Contact Us</a></li>");

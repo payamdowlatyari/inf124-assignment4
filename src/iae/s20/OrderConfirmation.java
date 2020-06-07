@@ -14,6 +14,15 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriBuilder;
+
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
+import org.glassfish.jersey.client.ClientConfig;
 
 /**
  * Servlet implementation class OrderConfirmation
@@ -78,6 +87,28 @@ public class OrderConfirmation extends HttpServlet {
             	   HashMap<Integer, Integer> idList = (HashMap<Integer, Integer>) session.getAttribute("idList");
             	   int orderID = (int) session.getAttribute("newID");
             	   out.println("<h4>Order has been confirmed with id: "  + Integer.toString(orderID) + "</h4>");
+            	   ClientConfig config = new ClientConfig();
+            	   Order order = new Order();
+            	   Client client = ClientBuilder.newClient(config);
+            	   WebTarget target = client.target(UriBuilder.fromUri("http://localhost:6060/PA3").build());
+            	   try {
+            		   String jsonResponse = target.path("rest").path("orders").path(Integer.toString(orderID)).request(). //send a request
+	                        accept(MediaType.APPLICATION_JSON). //specify the media type of the response
+	                        get(String.class);
+            		   System.out.println(jsonResponse);
+            		   ObjectMapper objectMapper = new ObjectMapper();
+            		   order = objectMapper.readValue(jsonResponse, new TypeReference<Order>() {});
+            	   }
+            	   catch(Exception e) {
+            		   e.printStackTrace();
+            	   }
+            	   out.println("<h3>Order Information</h3>");
+            	   out.println("<p>Name: " + order.getName() + "</p>");
+            	   out.println("<p>Email: " + order.getEmail() + "</p>");
+            	   out.println("<p>Phone Number: " + order.getPhone() + "</p>");
+            	   out.println("<p>Total Price: " + Double.toString(order.getTotalPrice()) + "</p>");
+            	   out.println("<p>Card Number: " + replaceAsterix(order.getCardnumber()) + "</p>");
+            	   out.println("<p>Card Name: " + order.getCardname() + "</p>");
             	   out.println("<h3>Products Purchased</h3>");
             	   out.println("<table><tr>");
             	   out.println("<th>Product</th>");
@@ -85,10 +116,24 @@ public class OrderConfirmation extends HttpServlet {
             	   out.println("</tr>");
             	   for(Map.Entry<Integer, Integer> mapElement : idList.entrySet()) {
             		   out.println("<tr>");
-            		   Statement st = connection.createStatement();    	 
-            		   ResultSet rs = st.executeQuery("SELECT * FROM products where id= " + Integer.toString(mapElement.getKey()));
-            		   if(rs.next()) {
-            			   String name = rs.getString("name");
+//            		   Statement st = connection.createStatement();    	 
+//            		   ResultSet rs = st.executeQuery("SELECT * FROM products where id= " + Integer.toString(mapElement.getKey()));
+            		   Product indProduct = new Product();
+            		   Client client2 = ClientBuilder.newClient(new ClientConfig());
+            		   WebTarget target2 = client2.target(UriBuilder.fromUri("http://localhost:6060/PA3").build());
+            		   try {
+       	            	String jsonResponse = target2.path("rest").path("products").path(Integer.toString(mapElement.getKey())).request(). //send a request
+       	                        accept(MediaType.APPLICATION_JSON). //specify the media type of the response
+       	                        get(String.class);
+       	            	System.out.println(jsonResponse);
+       	            	ObjectMapper objectMapper = new ObjectMapper();
+       	            	indProduct = objectMapper.readValue(jsonResponse, new TypeReference<Product>() {});
+       	            	}
+       	            	catch(Exception e) {
+       	            		e.printStackTrace();
+       	            	}
+            		   if(indProduct != null) {
+            			   String name = indProduct.getName();
             			   out.println("<td>" + name + "</td>");
             		   }
             		   out.println("<td>" + Integer.toString(mapElement.getValue()) + "</td>");
@@ -178,6 +223,15 @@ public class OrderConfirmation extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		doGet(request, response);
+	}
+	
+	private String replaceAsterix(String s) {
+		int len = s.length();
+		String toReturn = "";
+		for(int i = 0; i < len-4; i++) {
+			toReturn += "*";
+		}
+		return toReturn + s.substring(len-4, len);
 	}
 
 }

@@ -86,12 +86,12 @@ public class CartServlet extends HttpServlet {
                out.println("<div class=\"header\">");
                out.println("<div class=\"content\"> ");
                out.println("<div class=\"logo\"> ");
-               out.println("<a href=\"HomeServlet\"> ");
+               out.println("<a href=\"index.jsp\"> ");
                out.println("<h1>Sports Store</h1>");
                out.println("</a></div></div>");
                out.println("<div class=\"navbar\"> ");
                out.println("<ul class=\"content\"> ");
-               out.println("<li><a href=\"HomeServlet\">Home</a></li> ");
+               out.println("<li><a href=\"index.jsp\">Home</a></li> ");
                out.println("<li><a href=\"ProductServlet\">Products</a></li> ");
                out.println("<li><a href=\"AboutServlet\">About Us</a></li> ");
                out.println("<li><a href=\"ContactServlet\">Contact Us</a></li>");

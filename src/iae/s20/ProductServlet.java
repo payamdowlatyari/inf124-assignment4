@@ -1,42 +1,25 @@
 package iae.s20;
-import java.sql.*;
-import java.text.SimpleDateFormat;
-
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.io.PrintWriter;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 //
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference; 
 import org.glassfish.jersey.client.ClientConfig;
 
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import javax.servlet.annotation.WebServlet;
 
 
 //@WebServlet(name = "MainServlet", urlPatterns = { "/MainServlet" })
@@ -93,12 +76,12 @@ public class ProductServlet extends HttpServlet {
             out.println("<div class=\"header\">");
             out.println("<div class=\"content\"> ");
             out.println("<div class=\"logo\"> ");
-            out.println("<a href=\"HomeServlet\"> ");
+            out.println("<a href=\"index.jsp\"> ");
             out.println("<h1>Sports Store</h1>");
             out.println("</a></div></div>");
             out.println("<div class=\"navbar\"> ");
             out.println("<ul class=\"content\"> ");
-            out.println("<li><a href=\"HomeServlet\">Home</a></li> ");
+            out.println("<li><a href=\"index.jsp\">Home</a></li> ");
             out.println("<li><a href=\"ProductServlet\"class=\"active\">Products</a></li> ");
             out.println("<li><a href=\"AboutServlet\">About Us</a></li> ");
             out.println("<li><a href=\"ContactServlet\">Contact Us</a></li>");

@@ -234,7 +234,7 @@ public void doGet(HttpServletRequest request, HttpServletResponse response) thro
 			formData.put("address", params.get("address"));
 			newOrder.setCardname(params.get("cardname"));
 //			formData.param("cardname", params.get("cardname"));
-//			newOrder.setEmail(params.get("email"));
+			newOrder.setEmail(params.get("email"));
 			int newID = Math.abs((int)(Math.random()* 10000));
 			session.setAttribute("newID", newID);
 			newOrder.setId(newID);
