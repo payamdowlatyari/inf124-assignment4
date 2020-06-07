@@ -99,7 +99,7 @@ public class HomeServlet extends HttpServlet {
                out.println("<li><a href=\"CartServlet\">Shopping Cart</a></li>");
                out.println("</ul></div></div>");
                int prevItemsRendered = 0;
-               try(Connection connection = DatabaseConnection.connect()) { 
+               try{ 
 	               out.println(" <div class=\"main\">");
 	               out.println(" <div class=\"content\">");   
 //	               out.println("<br><br><h1>Previously Viewed Items</h1>");
@@ -261,7 +261,6 @@ public class HomeServlet extends HttpServlet {
        		} 
        		finally 
        	    {    			
-       			DatabaseConnection.disconnect();
        			
        		} 				
        	

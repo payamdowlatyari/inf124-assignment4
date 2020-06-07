@@ -81,7 +81,7 @@ public class OrderConfirmation extends HttpServlet {
                out.println(" <h1><br>Confirmation</h1>\n");
                
                
-               try(java.sql.Connection connection = DatabaseConnection.connect()) {                               
+               try {                               
             	       
             	   @SuppressWarnings("unchecked")
             	   HashMap<Integer, Integer> idList = (HashMap<Integer, Integer>) session.getAttribute("idList");

@@ -267,7 +267,6 @@ public class DetailServlet extends HttpServlet {
 	    		} 
 	    		finally 
 	    	    {    			
-	    			DatabaseConnection.disconnect();
 	    		}
 	    		
 		

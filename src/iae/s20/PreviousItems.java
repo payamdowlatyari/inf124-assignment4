@@ -63,7 +63,7 @@ public class PreviousItems extends HttpServlet {
         out.println("<table width='100% cellspacing=20'>");
         out.println("<tbody><tr>");
         int prevItemsRendered = 0;
-        try(java.sql.Connection connection = DatabaseConnection.connect()) {
+        try {
         for(Integer id : noDups) {
      	   if(prevItemsRendered < 5) {
      		   	ClientConfig config = new ClientConfig();

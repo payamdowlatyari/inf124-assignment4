@@ -206,7 +206,6 @@ public class ProductServlet extends HttpServlet {
     		} 
     		finally 
     	    {    			
-    			DatabaseConnection.disconnect();
     			
     		} 				
     	

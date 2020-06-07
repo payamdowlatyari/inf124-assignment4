@@ -222,7 +222,7 @@ public void doGet(HttpServletRequest request, HttpServletResponse response) thro
 			params.put(paramName, paramValue);
 		}
 		Float subtotal = (Float)session.getAttribute("subtotal");
-		try(java.sql.Connection connection = DatabaseConnection.connect()){
+		try{
 			JSONObject formData = new JSONObject();
 			ClientConfig config = new ClientConfig();
         	Client client = ClientBuilder.newClient(config);

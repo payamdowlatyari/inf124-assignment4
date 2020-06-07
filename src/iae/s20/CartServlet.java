@@ -16,6 +16,15 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriBuilder;
+
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
+import org.glassfish.jersey.client.ClientConfig;
 
 /**
  * Servlet implementation class CartServlet
@@ -107,14 +116,22 @@ public class CartServlet extends HttpServlet {
                float subtotal = (float) 0.0;
                for (HashMap.Entry<Integer, Integer> entry : idList.entrySet()) {
             	   out.println("<li>");
-            	   try(java.sql.Connection connection = DatabaseConnection.connect()){
+            	   try{
             		   int id = entry.getKey();
             		   int quantity = entry.getValue();
-            		   Statement st = connection.createStatement();
-            		   ResultSet rs = st.executeQuery("SELECT * FROM products where id= " + id);
-            		   if(rs.next()) {
-	            		   String name = rs.getString("name");
-	            		   Float price = rs.getFloat("price");
+            		   ClientConfig config = new ClientConfig();
+   	            		Product product = new Product();
+   	            		Client client = ClientBuilder.newClient(config);
+   	            		WebTarget target = client.target(UriBuilder.fromUri("http://localhost:6060/PA3").build());
+   	            		String jsonResponse = target.path("rest").path("products").path(Integer.toString(id)).request(). //send a request
+   		                        accept(MediaType.APPLICATION_JSON). //specify the media type of the response
+   		                        get(String.class);
+   		            	System.out.println(jsonResponse);
+   		            	ObjectMapper objectMapper = new ObjectMapper();
+   		            	product = objectMapper.readValue(jsonResponse, new TypeReference<Product>() {});
+            		   if(product != null) {
+	            		   String name = product.getName();
+	            		   Float price = (float) product.getPrice();
 	            		   subtotal += (quantity*price);
 	            		   out.println("<ul>" + name + "\tPrice:" + Float.toString(price) + " Quantity:" + Integer.toString(quantity) + "</ul>");
             		   }
