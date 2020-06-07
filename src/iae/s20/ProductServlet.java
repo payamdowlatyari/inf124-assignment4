@@ -82,7 +82,7 @@ public class ProductServlet extends HttpServlet {
             out.println("<div class=\"navbar\"> ");
             out.println("<ul class=\"content\"> ");
             out.println("<li><a href=\"index.jsp\">Home</a></li> ");
-            out.println("<li><a href=\"ProductServlet\"class=\"active\">Products</a></li> ");
+            out.println("<li><a href=\"products.jsp\"class=\"active\">Products</a></li> ");
             out.println("<li><a href=\"AboutServlet\">About Us</a></li> ");
             out.println("<li><a href=\"ContactServlet\">Contact Us</a></li>");
             out.println("<li><a href=\"CartServlet\">Shopping Cart</a></li>");

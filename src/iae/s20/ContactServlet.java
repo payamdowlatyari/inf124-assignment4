@@ -52,7 +52,7 @@ public class ContactServlet extends HttpServlet {
                out.println("<div class=\"navbar\"> ");
                out.println("<ul class=\"content\"> ");
                out.println("<li><a href=\"index.jsp\">Home</a></li> ");
-               out.println("<li><a href=\"ProductServlet\">Products</a></li> ");
+               out.println("<li><a href=\"products.jsp\">Products</a></li> ");
                out.println("<li><a href=\"AboutServlet\">About Us</a></li> ");
                out.println("<li><a href=\"ContactServlet\"class=\"active\">Contact Us</a></li>");
                out.println("<li><a href=\"CartServlet\">Shopping Cart</a></li>");
